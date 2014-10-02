@@ -22,17 +22,19 @@ app.use(timer());
 
 app.get('/search', function (rq, rs) {
   var promisedSearchResponseBodies = searchEndpoints.map(function(searchEndpoint) {
-    // append the query parameter to the end of the url, then make call. We are returning a promise because
-    // http is from q-io
+    // append the query parameter to the end of the url, then ask for response bodies, please. We are returning a
+    // promise because http is from q-io
     return http.read(searchEndpoint.url + rq.query.q);
   });
 
   // wait until all queries succeed and then merge them into a JSON response document
   // and return to client
-  Q.all(promisedSearchResponseBodies).then(function (responseStrings) {
+  Q.all(promisedSearchResponseBodies).then(function (responseBodies) {
     var result = {query: rq.query, hello: 'hello'};
-    for(var i = 0; i < responseStrings.length; i++) {
-      result[searchEndpoints[i].name] = JSON.parse('' + responseStrings[i]);
+    for(var i = 0; i < responseBodies.length; i++) {
+      var search = searchEndpoints[i],
+          responseBody = '' + responseBodies[i]; // we wouldn't be wanting a byte array, now, would we?
+      result[search.name] = JSON.parse('' + '' + responseBody);
     }
     rs.send(result);
   });
