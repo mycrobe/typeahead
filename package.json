@@ -1,0 +1,11 @@
+{
+  "name": "typeahead",
+  "version": "1.0.0",
+  "description": "test typeahead possibilities for gramene",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "mulvaney",
+  "license": "ISC"
+}
