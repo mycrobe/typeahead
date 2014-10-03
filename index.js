@@ -9,10 +9,24 @@ var http = require('q-io/http');
 var app = express();
 
 var searchEndpoints = [
-  {name: 'Solr', url: 'http://gorgonzola.cshl.edu:8983/solr/grm-search/select?wt=json&indent=true&q=', displayProps:['title'], resultPath:['response', 'docs'], timePath:['responseHeader', 'QTime']},
-  {name: 'Mongo-Gene', url: 'http://data.gramene.org/search/genes/select?q=', displayProps:['name', 'gene_id', 'species'], resultPath:['response'], timePath:['time']},
-  {name: 'Mongo-Reactome', url: 'http://data.gramene.org/search/reactome/select?q=', displayProps:['pathway', 'name', 'system_name'], resultPath:['response'], timePath:['time']},
-  {name: 'Mongo-Cyc', url: 'http://data.gramene.org/search/cyc/select?q=', displayProps:['pathway_name', 'enzyme_name', 'gene_name', 'species'], resultPath:['response'], timePath:['time']}
+  {
+    name: 'Solr',
+    url: 'http://gorgonzola.cshl.edu:8983/solr/grm-search/select?wt=json&q=',
+    displayProps:['title'],
+    resultPath:['response', 'docs'],
+    timePath:['responseHeader', 'QTime'],
+    countPath:['response', 'numFound']
+  },
+  {
+    name: 'Mongo-Gene',
+    url: 'http://data.gramene.org/search/genes/select?q=',
+    displayProps:['name', 'gene_id', 'species'],
+    resultPath:['response'],
+    timePath:['time'],
+    countPath:['count']
+  },
+//  {name: 'Mongo-Reactome', url: 'http://data.gramene.org/search/reactome/select?q=', displayProps:['pathway', 'name', 'system_name'], resultPath:['response'], timePath:['time']},
+//  {name: 'Mongo-Cyc', url: 'http://data.gramene.org/search/cyc/select?q=', displayProps:['pathway_name', 'enzyme_name', 'gene_name', 'species'], resultPath:['response'], timePath:['time']}
 ];
 
 app.use(express.static(__dirname + '/web'));

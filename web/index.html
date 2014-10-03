@@ -7,6 +7,7 @@
     <link href="../bower_components/bootstrap-material-design/css-compiled/ripples.css" rel="stylesheet">
     <link href="../bower_components/bootstrap-material-design/css-compiled/material.css" rel="stylesheet">
     <link href="../bower_components/bootstrap-material-design/icons/icons-material-design.css" rel="stylesheet">
+    <link href="css/typeahead.css" rel="stylesheet">
 </head>
 <body>
 <div class="container-fluid">
@@ -44,45 +45,6 @@
 <script type="text/javascript" src="../bower_components/jquery/dist/jquery.min.js"></script>
 <!--<script src="../bower_components/bootstrap-material-design/scripts/ripples.js"></script>-->
 <!--<script src="../bower_components/bootstrap-material-design/scripts/material.js"></script>-->
-<script type="text/javascript">
-    function typeahead(q) {
-        $.getJSON('search', {'q': q}, function (data, status, xhr) {
-            $('#qTime').text(xhr.getResponseHeader('X-Response-Time') || '0ms');
-            $('#results').empty();
-            data.searches.forEach(function (search) {
-                var searchLi = $(document.createElement('li')),
-                        searchOl = $(document.createElement('ol')),
-                        results = data.results[search.name] || {},
-                        time = results;
-                $('#results').append(searchLi);
-
-                if (search.timePath) {
-                    search.timePath.forEach(function (p) {
-                        time = time[p];
-                        if (!time && time !== 0) throw new Error("Can't find time taken");
-                    })
-                }
-
-                searchLi.text(search.name + ' (' + time + 'ms)');
-                searchLi.append(searchOl);
-
-                if (search.resultPath) {
-                    search.resultPath.forEach(function (p) {
-                        results = results[p];
-                        if (!results) throw new Error("Can't find results");
-                    });
-                }
-
-                results.forEach(function (result) {
-                    var resultLi = $(document.createElement('li'));
-                    search.displayProps.forEach(function (displayProp) {
-                        if (result[displayProp]) resultLi.append(' <span class="' + displayProp + '">' + result[displayProp] + '</span>');
-                    });
-                    searchOl.append(resultLi);
-                });
-            });
-        });
-    }
-</script>
+<script type="text/javascript" src="js/typeahead.js"></script>
 </body>
 </html>
