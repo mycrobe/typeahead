@@ -9,11 +9,11 @@ var http = require('q-io/http');
 var app = express();
 
 var searchEndpoints = [
-  {name: 'solr', url: 'http://gorgonzola.cshl.edu:8983/solr/grm-search/select?wt=json&indent=true&q='},
-  {name: 'gene', url: 'http://data.gramene.org/search/genes/select?q='},
-  {name: 'reactome', url: 'http://data.gramene.org/search/reactome/select?q='},
-  {name: 'cyc', url: 'http://data.gramene.org/search/cyc/select?q='}
-]
+  {name: 'Solr', url: 'http://gorgonzola.cshl.edu:8983/solr/grm-search/select?wt=json&indent=true&q=', displayProps:['title'], resultPath:['response', 'docs'], timePath:['responseHeader', 'QTime']},
+  {name: 'Mongo-Gene', url: 'http://data.gramene.org/search/genes/select?q=', displayProps:['name', 'gene_id', 'species'], resultPath:['response'], timePath:['time']},
+  {name: 'Mongo-Reactome', url: 'http://data.gramene.org/search/reactome/select?q=', displayProps:['pathway', 'name', 'system_name'], resultPath:['response'], timePath:['time']},
+  {name: 'Mongo-Cyc', url: 'http://data.gramene.org/search/cyc/select?q=', displayProps:['pathway_name', 'enzyme_name', 'gene_name', 'species'], resultPath:['response'], timePath:['time']}
+];
 
 app.use(express.static(__dirname + '/web'));
 app.use('/bower_components', express.static(__dirname + '/bower_components'));
@@ -30,11 +30,11 @@ app.get('/search', function (rq, rs) {
   // wait until all queries succeed and then merge them into a JSON response document
   // and return to client
   Q.all(promisedSearchResponseBodies).then(function (responseBodies) {
-    var result = {query: rq.query, hello: 'hello'};
+    var result = {query: rq.query, searches:searchEndpoints, results:{}};
     for(var i = 0; i < responseBodies.length; i++) {
       var search = searchEndpoints[i],
           responseBody = '' + responseBodies[i]; // we wouldn't be wanting a byte array, now, would we?
-      result[search.name] = JSON.parse('' + '' + responseBody);
+      result.results[search.name] = JSON.parse(responseBody);
     }
     rs.send(result);
   });
