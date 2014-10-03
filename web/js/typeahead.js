@@ -1,3 +1,5 @@
+// given a data structure and a path --a list of hierarchical elements to traverse--
+// return the part of the datastructure specified by the path.
 function getNested(data, path) {
   var result = data;
   if(path) {
@@ -14,7 +16,7 @@ function typeahead(q) {
     $('#qTime').text(xhr.getResponseHeader('X-Response-Time') || '0ms');
     $('#results').empty();
     data.searches.forEach(function (search) {
-      var searchLi = $(document.createElement('li')).addClass('search').addClass('col-md-6'),
+      var searchLi = $(document.createElement('li')).addClass('search').addClass('col-md-4'),
         searchOl = $(document.createElement('ol')).addClass('resultList'),
         searchResponse = data.results[search.name] || {},
         results = getNested(searchResponse, search.resultPath),

@@ -18,6 +18,14 @@ var searchEndpoints = [
     countPath:['response', 'numFound']
   },
   {
+    name: 'Mongo-Suggest',
+    url: 'http://data.gramene.org/x/genes/suggest?fl=_terms,gene_id,name,description&t=',
+    displayProps:['name', 'gene_id', 'species'],
+    resultPath:['response'],
+    timePath:['time'],
+    countPath:['count']
+  },
+  {
     name: 'Mongo-Gene',
     url: 'http://data.gramene.org/search/genes/select?q=',
     displayProps:['name', 'gene_id', 'species'],
