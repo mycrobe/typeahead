@@ -1,3 +1,5 @@
+var lastQueryTime = new Date();
+
 // given a data structure and a path --a list of hierarchical elements to traverse--
 // return the part of the datastructure specified by the path.
 function getNested(data, path) {
@@ -12,8 +14,18 @@ function getNested(data, path) {
 }
 
 function typeahead(q) {
+  var queryTime = new Date();
   $.getJSON('search', {'q': q}, function (data, status, xhr) {
-    $('#qTime').text(xhr.getResponseHeader('X-Response-Time') || '0ms');
+    var xhrRespTime = xhr.getResponseHeader('X-Response-Time');
+    if(queryTime < lastQueryTime) {
+      console.error('query for "' + q + '" was ignored because a later query arrived sooner. The slow one took ' + xhrRespTime + ' to be generated on the server');
+      return;
+    }
+    else {
+      lastQueryTime = queryTime;
+    }
+
+    $('#qTime').text(xhrRespTime || '0ms');
     $('#results').empty();
     data.searches.forEach(function (search) {
       var searchLi = $(document.createElement('li')).addClass('search').addClass('col-md-4'),
