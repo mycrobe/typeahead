@@ -19,7 +19,7 @@ var searchEndpoints = [
   },
   {
     name: 'Mongo-Suggest',
-    url: 'http://data.gramene.org/x/genes/suggest?fl=_terms,gene_id,name,description&t=',
+    url: 'http://data.gramene.org/search/genes/suggest?fl=_terms,gene_id,name,description&t=',
     displayProps:['name', 'gene_id', 'species'],
     resultPath:['response'],
     timePath:['time'],
@@ -45,7 +45,7 @@ app.use(timer());
 app.get('/search', function (rq, rs) {
   var promisedSearchResponseBodies = searchEndpoints.map(function(searchEndpoint) {
     // append the query parameter to the end of the url, then ask for response bodies, please. We are returning a
-    // promise because http is from q-io
+    // promise because the http object is from q-io
     return http.read(searchEndpoint.url + rq.query.q);
   });
 
