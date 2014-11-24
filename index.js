@@ -8,33 +8,49 @@ var Q = require('q');
 var http = require('q-io/http');
 var app = express();
 
+var host = 'http://data.gramene.org/43/search/';
+host = 'http://localhost:8983/solr/';
 var searchEndpoints = [
   {
-    name: 'Solr',
-    url: 'http://gorgonzola.cshl.edu:8983/solr/grm-search/select?wt=json&q=',
-    displayProps:['title'],
+    name: 'genes',
+    url: host + 'genes/select?wt=json&q=',
+    displayProps:['name','database','system_name','gene_id'],
     resultPath:['response', 'docs'],
     timePath:['responseHeader', 'QTime'],
     countPath:['response', 'numFound']
   },
   {
-    name: 'Mongo-Suggest',
-    url: 'http://data.gramene.org/x/genes/suggest?fl=_terms,gene_id,name,description&t=',
-    displayProps:['name', 'gene_id', 'species'],
-    resultPath:['response'],
-    timePath:['time'],
-    countPath:['count']
+    name: 'GO',
+    url: host + 'GO/select?wt=json&q=',
+    displayProps:['name_s','id'],
+    resultPath:['response', 'docs'],
+    timePath:['responseHeader', 'QTime'],
+    countPath:['response', 'numFound']
   },
   {
-    name: 'Mongo-Gene',
-    url: 'http://data.gramene.org/search/genes/select?q=',
-    displayProps:['name', 'gene_id', 'species'],
-    resultPath:['response'],
-    timePath:['time'],
-    countPath:['count']
+    name: 'PO',
+    url: host + 'PO/select?wt=json&q=',
+    displayProps:['name_s','id'],
+    resultPath:['response', 'docs'],
+    timePath:['responseHeader', 'QTime'],
+    countPath:['response', 'numFound']
   },
-//  {name: 'Mongo-Reactome', url: 'http://data.gramene.org/search/reactome/select?q=', displayProps:['pathway', 'name', 'system_name'], resultPath:['response'], timePath:['time']},
-//  {name: 'Mongo-Cyc', url: 'http://data.gramene.org/search/cyc/select?q=', displayProps:['pathway_name', 'enzyme_name', 'gene_name', 'species'], resultPath:['response'], timePath:['time']}
+  {
+    name: 'taxonomy',
+    url: host + 'taxonomy/select?wt=json&q=',
+    displayProps:['name_s','id'],
+    resultPath:['response', 'docs'],
+    timePath:['responseHeader', 'QTime'],
+    countPath:['response', 'numFound']
+  },
+  {
+    name: 'interpro',
+    url: host + 'interpro/select?wt=json&q=',
+    displayProps:['name_s','id'],
+    resultPath:['response', 'docs'],
+    timePath:['responseHeader', 'QTime'],
+    countPath:['response', 'numFound']
+  }
 ];
 
 app.use(express.static(__dirname + '/web'));
@@ -46,7 +62,7 @@ app.get('/search', function (rq, rs) {
   var promisedSearchResponseBodies = searchEndpoints.map(function(searchEndpoint) {
     // append the query parameter to the end of the url, then ask for response bodies, please. We are returning a
     // promise because http is from q-io
-    return http.read(searchEndpoint.url + rq.query.q);
+    return http.read(searchEndpoint.url + rq.query.q + '*');
   });
 
   // wait until all queries succeed and then merge them into a JSON response document
