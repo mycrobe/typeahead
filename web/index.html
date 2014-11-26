@@ -24,7 +24,7 @@
             </div>
             <div class="navbar-collapse collapse navbar-responsive-collapse">
                 <form class="navbar-form navbar-left">
-                    <input type="text" class="form-control col-lg-8" onkeyup="typeahead(this.value)"
+                    <input type="text" class="form-control col-lg-8" onfocus="tah_on()" onblur="tah_off()" onkeyup="tah_search(this.value)"
                            placeholder="Search">
                 </form>
             </div>

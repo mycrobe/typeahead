@@ -57,7 +57,6 @@ app.use(express.static(__dirname + '/web'));
 app.use('/bower_components', express.static(__dirname + '/bower_components'));
 app.use(logger({path: 'logs/server.log'}));
 app.use(timer());
-
 app.get('/search', function (rq, rs) {
   var promisedSearchResponseBodies = searchEndpoints.map(function(searchEndpoint) {
     // append the query parameter to the end of the url, then ask for response bodies, please. We are returning a
