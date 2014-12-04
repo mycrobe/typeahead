@@ -25,6 +25,7 @@ list of secondary cores: taxonomy, interpro, GO, PO, etc
 var cores = {
   genes : {
     enabled : true,
+    labelField : 'gene_id',
     params : {
       rows : 10,
       wt : 'json',
@@ -45,6 +46,7 @@ var cores = {
   },
   taxonomy : {
     enabled : true,
+    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -61,6 +63,7 @@ var cores = {
   },
   interpro : {
     enabled : true,
+    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -77,6 +80,7 @@ var cores = {
   },
   GO : {
     enabled : true,
+    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -93,6 +97,7 @@ var cores = {
   },
   PO : {
     enabled : true,
+    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -109,12 +114,63 @@ var cores = {
   }
 };
 
+var activeFilters = {
+  'GO' : {},
+  'PO' : {},
+  'taxonomy' : {},
+  'interpro' : {}
+};
+var nActiveFilters=0;
+var filterClass = {
+  'GO' : 'primary',
+  'PO' : 'success',
+  'taxonomy' : 'warning',
+  'interpro' : 'info'
+};
+function addFilterGroup(core) {
+  // <span id="GOFilters" class="label label-default">
+  if (!filterClass.hasOwnProperty(core)) filterClass[core] = 'default';
+  var fg = $(document.createElement('li'))
+    .addClass('label')
+    .addClass('label-'+ filterClass[core])
+    .attr('id',core+'Filters');
+  fg.html('<em>'+core+'</em> | ');
+  $('#filtersGoHere').append(fg);
+}
+
+function addFilter(core, id, label) {
+  if (!activeFilters.hasOwnProperty(core)) activeFilters[core] = {};
+  if (activeFilters[core].hasOwnProperty(id)) return;
+  if (Object.keys(activeFilters[core]).length === 0) {
+    addFilterGroup(core);
+  }
+  activeFilters[core][id] = label;
+  nActiveFilters++;
+//        <span id="GO:1234">Molecular Function<a onclick="removeFilter('GO',1234)" class="label"><sup>&times;</sup></a></span>
+
+  var filter = $(document.createElement('span')).attr('id', core+':'+id);
+  filter.html(label + '<a onclick="removeFilter(\''+core+'\','+id+')" class="label"><sup>&times;</sup></a>');
+  $('#'+core+'Filters').append(filter);
+  run_search();
+}
+
+function removeFilter(core,id) {
+  delete activeFilters[core][id];
+  nActiveFilters--;
+  var element = document.getElementById(core+':'+id);
+  element.parentNode.removeChild(element);
+  if (Object.keys(activeFilters[core]).length === 0) {
+    element = document.getElementById(core+'Filters');
+    element.parentNode.removeChild(element);
+  }
+  run_search();
+}
 
 function initialize(p) {
   cores.genes.enabled=true;
 }
 var searchURL = "http://data.gramene.org/43/search/";
-function searchSecondary(secondaryCore,fc) {
+function searchSecondary(secondaryCore,fc,searchLi) {
   var ids = [];
   var counts = {};
   for (var i=0;i<fc.length;i+=2) {
@@ -130,26 +186,46 @@ function searchSecondary(secondaryCore,fc) {
       var doc = docs[i];
       label[doc.id] = doc.name_s;
     }
+    searchLi.append('<p>'+secondaryCore+'</p>');
+    var facetUl = $(document.createElement('div')).addClass('list-group');
     for (var i=0;i<ids.length;i++) {
-      console.log(secondaryCore,label[ids[i]],counts[ids[i]]);
+      var facetLi = $(document.createElement('a')).addClass('list-group-item');
+      facetLi.html('<a onclick="addFilter(\''+secondaryCore+'\','+ids[i]+',\''+label[ids[i]]+'\')">'+label[ids[i]]+' <span class="badge">'+counts[ids[i]]+'</span></a>');
+      facetUl.append(facetLi);
+//      console.log(secondaryCore,label[ids[i]],counts[ids[i]]);
     }
+    searchLi.append(facetUl);
   });
 }
 
 function searchCore(core,q) {
   var url = searchURL + core + '?';
   cores[core].params.q = q + '*';
+  if (cores[core].hasOwnProperty('xref')) {
+    cores[core].params.fq = [];
+    if (nActiveFilters > 0) {
+      for (var c in activeFilters) {
+        var ids = Object.keys(activeFilters[c]);
+        if (ids.length > 0) {
+          if (c === 'taxonomy') {
+            cores[core].params.fq.push('NCBITaxon_ancestors:('+ids.join(' ')+')');
+          }
+          else {
+            cores[core].params.fq.push(c+'_ancestors:('+ids.join(' AND ')+')');
+          }
+        }
+      }
+    }
+  }
   $.getJSON(url,cores[core].params, function(data, status, xhr) {
-    var searchLi = $(document.createElement('li')).addClass('search').addClass('col-md-4'),
-        searchOl = $(document.createElement('ol')).addClass('resultList');
 
     var count = data.response.numFound;
     var time = data.responseHeader.QTime;
     if (count) {
-      $('#results').append(searchLi);
-      searchLi.html('<h3>' + core + ' <small>found ' + count + ' in ' + time + 'ms</small></h3>');
-      searchLi.append(searchOl);
-
+      var panel = $("#"+core);
+      panel.html('<p><small>found ' + count + ' in ' + time + 'ms</small></p>');
+      var searchOl = $(document.createElement('ol')).addClass('resultList');
+      panel.append(searchOl);
       var docs = data.response.docs;
       for(var i=0;i<docs.length;i++) {
         var doc = docs[i];
@@ -161,7 +237,8 @@ function searchCore(core,q) {
             longest = highlights[field];
           }
         }
-        resultLi.append('<span><small>' + JSON.stringify(doc) + '</small>' + longest + '</span>');
+        if (longest === '') longest = doc[cores[core].labelField];
+        resultLi.append('<span><small>' + JSON.stringify(doc) + '</small> ' + longest + '</span>');
         searchOl.append(resultLi);
       }
       // do something with the facets
@@ -170,7 +247,7 @@ function searchCore(core,q) {
           var fc = data.facet_counts.facet_fields[field];
           if (fc.length > 2) {
             // create a query for the integer ids
-            searchSecondary(cores[core].xref[field],fc);
+            searchSecondary(cores[core].xref[field],fc,searchOl);
           }
         }
       }
@@ -185,15 +262,21 @@ function tah_on() {
 function tah_off() {
   on=false;
 }
+var timeoutID;
+function run_search() {
+  // implement a delay
+//  $('#results').empty();
+  for (var core in cores) {
+    if (cores[core].enabled) {
+      searchCore(core,prev_q);
+    }
+  }
+}
+
 function tah_search(q) {
   if (!on) return;
   if (q === prev_q) return;
   prev_q = q;
-  // implement a delay
-  $('#results').empty();
-  for (var core in cores) {
-    if (cores[core].enabled) {
-      searchCore(core,q);
-    }
-  }
+  window.clearTimeout(timeoutID);
+  timeoutID = window.setTimeout(run_search, 200);
 }
