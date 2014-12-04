@@ -22,6 +22,17 @@ list of main cores: genes, pathways, etc
 list of secondary cores: taxonomy, interpro, GO, PO, etc
 
 */
+function defaultRenderer(core,doc,highlights) {
+  var longest='';
+  for (var field in highlights) {
+    if (highlights[field].length > longest.length) {
+      longest = highlights[field];
+    }
+  }
+  if (longest === '') longest = doc.name_s;
+  return '<strong>' +doc.name_s + '</strong> <span>'+longest + '<span> <a onclick="addFilter(\''+core+'\','+doc.id+',\''+doc.name_s+'\')">Add Filter</a>';
+}
+
 var cores = {
   genes : {
     enabled : true,
@@ -29,12 +40,12 @@ var cores = {
     params : {
       rows : 10,
       wt : 'json',
-      fl : 'id,database,system_name,gene_id',
+      fl : 'id,database,system_name,gene_id,genetrees',
       hl : 'true',
       'hl.fl' : '*',
       fq : [],
       facet : 'true',
-      'facet.mincount' : 1,
+      'facet.mincount' : 2,
       'facet.field' : ['taxon_id', 'interpro_xrefi', 'GO_xrefi', 'PO_xrefi']
     },
     xref : {
@@ -42,11 +53,25 @@ var cores = {
       interpro_xrefi : 'interpro',
       GO_xrefi : 'GO',
       PO_xrefi : 'PO'
+    },
+    renderFunc : function(core,doc,highlights) {
+      var longest='';
+      for (var field in highlights) {
+        if (highlights[field].length > longest.length) {
+          longest = highlights[field];
+        }
+      }
+      if (longest === '') longest = doc.gene_id;
+      var geneTreeLink = '';
+      if (doc.hasOwnProperty('genetrees') && doc.genetrees.length>0) {
+        geneTreeLink = ' GeneTree: <a target="_blank" href="http://ensembl.gramene.org/Multi/GeneTree/Image?gt=' + doc.genetrees[0] + '">'+doc.genetrees[0]+'</a>';
+      }
+      var geneLink = ' Gene: <a target="_blank" href="http://ensembl.gramene.org/'+doc.system_name+'/Gene/Summary?db='+doc.database+';g='+doc.gene_id+'">'+doc.gene_id+'</a>';
+      return '<span>' + longest + '</span><div>' + geneLink + geneTreeLink + '</div>';
     }
   },
   taxonomy : {
     enabled : true,
-    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -59,11 +84,20 @@ var cores = {
       wt : 'json',
       fl : 'id,name_s,rank_s',
       rows : 10
+    },
+    renderFunc : function(core,doc,highlights) {
+      var longest='';
+      for (var field in highlights) {
+        if (highlights[field].length > longest.length) {
+          longest = highlights[field];
+        }
+      }
+      if (longest === '') longest = doc.name_s;
+      return '<strong>' + doc.rank_s + ': '+doc.name_s + '</strong> <span>'+longest + '<span> <a onclick="addFilter(\''+core+'\','+doc.id+',\''+doc.name_s+'\')">Add Filter</a>';
     }
   },
   interpro : {
     enabled : true,
-    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -76,11 +110,20 @@ var cores = {
       wt : 'json',
       fl : 'id,name_s,type_s',
       rows : 10
+    },
+    renderFunc : function(core,doc,highlights) {
+      var longest='';
+      for (var field in highlights) {
+        if (highlights[field].length > longest.length) {
+          longest = highlights[field];
+        }
+      }
+      if (longest === '') longest = doc.name_s;
+      return '<strong>' + doc.type_s + ': '+doc.name_s + '</strong> <span>'+longest + '<span> <a onclick="addFilter(\''+core+'\','+doc.id+',\''+doc.name_s+'\')">Add Filter</a>';
     }
   },
   GO : {
     enabled : true,
-    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -93,11 +136,11 @@ var cores = {
       wt : 'json',
       fl : 'id,name_s',
       rows : 10
-    }
+    },
+    renderFunc : defaultRenderer
   },
   PO : {
     enabled : true,
-    labelField : 'name_s',
     params : {
       rows : 10,
       wt : 'json',
@@ -110,7 +153,8 @@ var cores = {
       wt : 'json',
       fl : 'id,name_s',
       rows : 10
-    }
+    },
+    renderFunc : defaultRenderer
   }
 };
 
@@ -221,24 +265,17 @@ function searchCore(core,q) {
 
     var count = data.response.numFound;
     var time = data.responseHeader.QTime;
+    var panel = $("#"+core);
+    panel.html('<p><small>found ' + count + ' in ' + time + 'ms</small></p>');
     if (count) {
-      var panel = $("#"+core);
-      panel.html('<p><small>found ' + count + ' in ' + time + 'ms</small></p>');
-      var searchOl = $(document.createElement('ol')).addClass('resultList');
+      var searchOl = $(document.createElement('ul')).addClass('resultList');
       panel.append(searchOl);
       var docs = data.response.docs;
       for(var i=0;i<docs.length;i++) {
         var doc = docs[i];
         var highlights = data.highlighting[doc.id];
         var resultLi = $(document.createElement('li'));
-        var longest='';
-        for (var field in highlights) {
-          if (highlights[field].length > longest.length) {
-            longest = highlights[field];
-          }
-        }
-        if (longest === '') longest = doc[cores[core].labelField];
-        resultLi.append('<span><small>' + JSON.stringify(doc) + '</small> ' + longest + '</span>');
+        resultLi.append(cores[core].renderFunc(core,doc,highlights));
         searchOl.append(resultLi);
       }
       // do something with the facets
