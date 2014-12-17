@@ -1,0 +1,244 @@
+<!doctype html>
+<html>
+<head>
+    <title>Gramene Search</title>
+    <style>
+        html {
+            font-size: 12px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+            color: #333333;
+        }
+
+        div.bar {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #searchBar {
+            background-color: #DDE5E3;
+            white-space: nowrap;
+            height: 4rem;
+        }
+
+        #logoContainer {
+            display: inline-block;
+            padding: 0;
+            width: 15rem;
+            height: 4rem;
+            white-space: nowrap;
+        }
+
+        #logo {
+            width: 100%;
+            height: 100%;
+            background-image: url(/img/gramene_logo_300.svg);
+            background-size: 70%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        #searchContainer {
+            display: inline-block;
+            width: calc(100% - 15rem);
+            vertical-align: top;
+            white-space: nowrap;
+            margin-top: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        /*#searchForm {*/
+            /*border: 1px red;*/
+        /*}*/
+
+        .searchFormComponent {
+            height: 2.4rem;
+            padding-left: 0.2rem;
+            padding-right: 0.2rem;
+            padding-top: 0;
+            padding-bottom: 0;
+            /*margin-top: 0.5rem;*/
+            /*margin-bottom: 0.5rem;*/
+            border: 1px solid #557B74;
+        }
+
+        #search {
+            min-width: 10rem;
+            width: calc(100% - 12rem);
+            color: #547B74;
+        }
+
+        #submit {
+            white-space: nowrap;
+            background-color: #547B74;
+            color: #FECA7E;
+            width: 10rem;
+        }
+
+        #menu {
+            border-bottom: 1px solid #DDE5E3;
+            color: #557B74;
+        }
+
+        #types {
+            margin-left: 15rem;
+            display: inline-block;
+        }
+
+        #types ol {
+            margin: 0;
+            padding-top: 1rem;
+            padding-left: 0;
+        }
+
+        #types ol li {
+            display: inline-block;
+            margin-right: 2rem;
+            padding-bottom: 0.5rem;
+        }
+
+        #types ol li.active {
+            border-bottom: 2px solid #557B74;
+            font-weight: bolder;
+        }
+
+        body a {
+            text-decoration: none;
+            color: #557B74;
+            cursor: pointer;
+        }
+
+        #toggleFiltersContainer {
+            display: inline-block;
+            padding-left: 1.67em;
+            border-left: 1px solid #DDE5E3;
+        }
+
+        a.toggle {
+            padding: 0.33rem;
+            border: 1px solid white;
+            cursor: pointer;
+        }
+
+        a.toggle:hover {
+            border: 1px solid #DDE5E3;
+        }
+
+        a.toggle.active {
+            border: 1px solid #557B74;
+            background-color: #557B74;
+            color: white;
+        }
+
+        #facets-top {
+            font-size: smaller;
+            margin-left: 15rem;
+        }
+
+        #facets-top ol {
+            margin: 0;
+            padding-top: 0.5rem;
+            padding-left: 0;
+        }
+
+        #facets-top ol li {
+            display: inline-block;
+            margin-right: 2rem;
+            padding-top: 1rem;
+            padding-bottom: 2rem;
+        }
+
+        #facets-left {
+            min-width: 15rem;
+            display: inline-block;
+            padding: 0;
+            padding-left: 0.1rem;
+        }
+
+        #items {
+            vertical-align: top;
+            padding: 0;
+            max-width: calc(100% - 12rem);
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        #results {
+
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body>
+<div id="viewport">
+    <div id="searchBar" class="bar">
+        <div id="logoContainer">
+            <a href="index.html">
+                <div id="logo"></div>
+            </a>
+        </div><div id="searchContainer">
+            <form id="searchForm">
+                <input id="search" class="searchFormComponent" type="search" autofocus
+                        /><input id="speciesFilter" class="searchFormComponent" type="button" name="submit"
+                                 value="Search All Species"/>
+            </form>
+        </div>
+    </div>
+    <div id="results">
+        <div id="menu" class="bar">
+            <div id="types">
+                <ol>
+                    <li class="active"><a href="#">Genes</a></li>
+                    <li><a href="#">Markers</a></li>
+                    <li><a href="#">Ontologies</a></li>
+                    <li><a href="#">Domains</a></li>
+                </ol>
+            </div>
+            <div id="toggleFiltersContainer">
+                <a class="toggle" id="toggleFilters" role="button">Filter</a>
+            </div>
+        </div>
+        <div id="facets-top" class="bar" style="display: none;">
+            <ol>
+                <li>
+                    <a class="toggle" data-filter="domain">Domain</a>
+                </li>
+                <li>
+                    <a class="toggle" data-filter="ontology">Ontology</a>
+                </li>
+                <li>
+                    <a class="toggle" data-filter="scaffold">Scaffold</a>
+                </li>
+            </ol>
+        </div>
+        <div id="resultsBody">
+            <div id="facets-left">
+                <form>
+                <div style="display: none;" data-filter="domain">
+                    <script type="text/template">
+                        <h4>Domain</h4>
+                        <% for(thing in things) { %>
+                            <input id="<%=thing%>" type="checkbox"><label for="<%=thing%>"><%=things[thing]%></label>
+                        <% } %>
+                    </script>
+                </div>
+                <div style="display: none;" data-filter="ontology"><h4>Ontology</h4></div>
+                <div style="display: none;" data-filter="scaffold"><h4>Scaffold</h4></div>
+                </form>
+            </div>
+            <script id="itemTemplate" type="text/template">
+                <h3></h3>
+            </script>
+            <div id="items"></div>
+        </div>
+    </div>
+</div>
+<script src="js/bundle.js"></script>
+</body>
+</html>

@@ -18,38 +18,6 @@ var searchEndpoints = [
     resultPath:['response', 'docs'],
     timePath:['responseHeader', 'QTime'],
     countPath:['response', 'numFound']
-  },
-  {
-    name: 'GO',
-    url: host + 'GO/select?wt=json&q=',
-    displayProps:['name_s','id'],
-    resultPath:['response', 'docs'],
-    timePath:['responseHeader', 'QTime'],
-    countPath:['response', 'numFound']
-  },
-  {
-    name: 'PO',
-    url: host + 'PO/select?wt=json&q=',
-    displayProps:['name_s','id'],
-    resultPath:['response', 'docs'],
-    timePath:['responseHeader', 'QTime'],
-    countPath:['response', 'numFound']
-  },
-  {
-    name: 'taxonomy',
-    url: host + 'taxonomy/select?wt=json&q=',
-    displayProps:['name_s','id'],
-    resultPath:['response', 'docs'],
-    timePath:['responseHeader', 'QTime'],
-    countPath:['response', 'numFound']
-  },
-  {
-    name: 'interpro',
-    url: host + 'interpro/select?wt=json&q=',
-    displayProps:['name_s','id'],
-    resultPath:['response', 'docs'],
-    timePath:['responseHeader', 'QTime'],
-    countPath:['response', 'numFound']
   }
 ];
 
