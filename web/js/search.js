@@ -1,37 +1,72 @@
 var $ = require('jquery')
   , EJS = require('ejs')
-  , search = require('./searchInterface');
+  , search = require('./searchInterface')
+  , hashParams = require('./hashParams');
 
 function populateResults(data) {
-  $('#items').text(data.response.numFound);
+  var resultCount = data.response.numFound
+    , template = $('#itemsT').html();
+  //$('#items').text(resultCount);
+
+  $('#items').html(EJS.render(template, data.response));
+
+  updateSpeciesFilter();
+  updateFilters();
+}
+
+function updateSpeciesFilter() {
+  search.getSpecies(function(facet) {
+    var template = $('script#speciesDropdownT').html();
+    var html = EJS.render(template, facet);
+    $('#speciesDropdown').html(html);
+  });
+}
+
+function updateFilters() {
+  search.getFilters(function (filters) {
+    var template = $('#facets-topT').html()
+      , templateLeft = $('#facets-leftT').html();
+    $('#facets-top').html(EJS.render(template, {filters:filters}));
+    $('#facets-left').html(EJS.render(templateLeft, {filters:filters}));
+  });
 }
 
 // copy any query into the search box
-var qterm = window.location.hash.split('q=')[1];
+var qterm = hashParams.get('q');
+//var qterm = window.location.hash.split('q=')[1];
 if (qterm) {
   document.getElementById('search').value = qterm;
-  search.geneSearch(qterm, populateResults);
+  //search.geneSearch(qterm, populateResults);
 }
 
 // update search when search text changes
 $('#search').on('keyup', function () {
-  window.location.hash = this.value ? 'q=' + this.value : '';
-  search.geneSearch(this.value, populateResults);
+  hashParams.set('q', this.value);
 });
 
 $('#toggleFilters').on('click', function () {
-  $('#facets-top').toggle();
-  $('#facets-left ol').toggle();
   $(this).toggleClass('active');
+  $('#facets-top ol').toggle();
+  $('#facets-left form').toggle();
 });
 
-$('#facets-top a').on('click', function () {
-  var filter = $(this).attr('data-filter')
-    , containerEl = $('#facets-left div[data-filter="' + filter + '"]')
-    , template = containerEl.find('script[type="text/template"]').html();
+$('#facets-top').on('click', 'a', function () {
+  var filterName = $(this).attr('data-filter')
+    , containerEl = $('#facets-left div[data-filter="' + filterName + '"]');
   $(this).toggleClass('active');
   containerEl.toggle();
-
-  var html = EJS.render(template, {things: {foo: 'bar'}});
-  containerEl.html(html);
 });
+
+$('#speciesFilter').on('click', function () {
+  $('#speciesDropdown').toggle();
+});
+
+$('form').on('change', 'input[type=radio]', function() {
+  var selectedFilter = $(this).data();
+  //search.addFilter(selectedFilter.facet, selectedFilter.facetId, populateResults);
+  hashParams.set(selectedFilter.facet, selectedFilter.facetId);
+});
+
+window.onhashchange = function() {
+  search.geneSearch(hashParams.get('q'), populateResults);
+};

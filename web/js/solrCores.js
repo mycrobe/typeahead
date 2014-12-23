@@ -6,19 +6,19 @@ var cores = {
     params : {
       rows : 10,
       wt : 'json',
-      fl : 'id,database,system_name,gene_id,genetrees',
+      //fl : 'id,database,system_name,gene_id,genetrees,name_s',
       hl : 'true',
       'hl.fl' : '*',
       fq : [],
       facet : 'true',
-      'facet.mincount' : 2,
+      'facet.mincount' : 0,
       'facet.field' : ['taxon_id', 'interpro_xrefi', 'GO_xrefi', 'PO_xrefi']
     },
     xref : {
-      taxon_id : 'taxonomy',
-      interpro_xrefi : 'interpro',
-      GO_xrefi : 'GO',
-      PO_xrefi : 'PO'
+      taxon_id : {core: 'taxonomy', displayName: 'Species'},
+      interpro_xrefi : {core: 'interpro', displayName: 'Domain'},
+      GO_xrefi : {core: 'GO', displayName: 'GO'},
+      PO_xrefi : {core: 'PO', displayName: 'PO'}
     },
   },
   taxonomy : {
@@ -107,4 +107,12 @@ exports.getFacetDetailsParams = function(core) {
 
 exports.hasXrefs = function(core) {
   return cores[core].hasOwnProperty('xref');
+}
+
+exports.getXrefCore = function(xref) {
+  return cores.genes.xref[xref].core;
+}
+
+exports.getXrefDisplayName = function(xref) {
+  return cores.genes.xref[xref].displayName;
 }
