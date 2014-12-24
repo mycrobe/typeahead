@@ -2,36 +2,21 @@ var cores = require('./solrCores')
   , $ = require('jquery')
   , Q = require('q');
 
-function geneSearch(queryString, callback) {
+function geneSearch(queryString, filters, callback) {
   var coreName = 'genes'
     , url = cores.getUrlForCore(coreName)
-    , params = cores.getSearchParams(coreName);
-
-  params.q = queryString + '*';
-
-  if (hasFilters()) {
-    for (var c in getFilters()) {
-      var ids = getFilter(c);
-      if (ids.length > 0) {
-        if (c === 'taxonomy') {
-          params.fq.push('NCBITaxon_ancestors:('+ids.join(' ')+')');
-        }
-        else {
-          fq.push(c+'_ancestors:('+ids.join(' AND ')+')');
-        }
-      }
-    }
-  }
+    , params = cores.getSearchParams(coreName, queryString, filters);
 
   $.getJSON(url, params, function(data) {
     // intercept the results and store it here before calling the callback. Stateful!
     results = data;
-    reformatFacetData();
+    reformatFacetData(data);
+    addFunctions(data);
     callback(data);
   });
 };
 
-function reformatFacetData() {
+function reformatFacetData(results) {
   var originalFacets = results.facet_counts.facet_fields;
   if(originalFacets && !results.facets) {
     var fixed = results.facets = {};
@@ -64,23 +49,32 @@ function reformatFacet( facetData, displayName ) {
   return result;
 }
 
-function getSpecies(callback) {
-  if(results && results.facets && results.facets.taxon_id) {
-    var promise = facetSearch('taxonomy', results.facets.taxon_id);
-    promise.then(callback);
+function addFunctions(data) {
+  data.getSpecies = getSpeciesFunction(data);
+  data.getFilters = getFiltersFunction(data);
+}
+
+function getSpeciesFunction(results) {
+  return function(callback) {
+    if(results && results.facets && results.facets.taxon_id) {
+      var promise = facetSearch('taxonomy', results.facets.taxon_id);
+      promise.then(callback);
+    }
   }
 }
 
-function getFilters(callback) {
-  if(results && results.facets) {
-    var promises = Object.keys(results.facets).map(function(f) {
-      var facet = results.facets[f]
-        , core = cores.getXrefCore(f);
-      return facetSearch(core, facet);
-    });
-    Q.all(promises).done(function() {
-      callback(results.facets);
-    })
+function getFiltersFunction(results) {
+  return function (callback) {
+    if (results && results.facets) {
+      var promises = Object.keys(results.facets).map(function (f) {
+        var facet = results.facets[f]
+          , core = cores.getXrefCore(f);
+        return facetSearch(core, facet);
+      });
+      Q.all(promises).done(function () {
+        callback(results.facets);
+      })
+    }
   }
 }
 
@@ -114,32 +108,32 @@ function mergeFacetData(facet, data) {
   return facet;
 }
 
-function addFilter(field, id, callback) {
-  filtered[field] = id;
-  geneSearch(query, callback); // query is stateful; module-scoped.
-};
-function hasFilters() {
-  return Object.keys(filters).length;
-};
-function getFilter(field, callback) {
-  return Object.keys(filters[field]);
-  geneSearch(query, callback); // query is stateful; module-scoped.
-};
-function clearFilter(filter, callback) {
-  delete filters[filter];
-  geneSearch(query, callback); // query is stateful; module-scoped.
-}
-function clearFilters(callback) {
-  filters = {};
-  geneSearch(query, callback); // query is stateful; module-scoped.
-};
-
+//function addFilter(field, id, callback) {
+//  filtered[field] = id;
+//  geneSearch(query, callback); // query is stateful; module-scoped.
+//};
+//function hasFilters() {
+//  return Object.keys(filters).length;
+//};
+//function getFilter(field, callback) {
+//  return Object.keys(filters[field]);
+//  geneSearch(query, callback); // query is stateful; module-scoped.
+//};
+//function clearFilter(filter, callback) {
+//  delete filters[filter];
+//  geneSearch(query, callback); // query is stateful; module-scoped.
+//}
+//function clearFilters(callback) {
+//  filters = {};
+//  geneSearch(query, callback); // query is stateful; module-scoped.
+//};
+//
 
 
 exports.geneSearch = geneSearch;
-exports.addFilter = addFilter;
-exports.getFilters = getFilters;
-exports.clearFilter = clearFilter;
-exports.clearFilters = clearFilters;
-exports.getSpecies = getSpecies;
-exports.getFilters = getFilters;
+//exports.addFilter = addFilter;
+//exports.getFilters = getFilters;
+//exports.clearFilter = clearFilter;
+////exports.clearFilters = clearFilters;
+//exports.getSpecies = getSpecies;
+//exports.getFilters = getFilters;

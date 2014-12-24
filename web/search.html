@@ -19,12 +19,8 @@
                                  value="All Species"/>
                 <div id="speciesDropdown" style="display: none;"></div>
                 <script id="speciesDropdownT" type="text/template">
-                    <!--<div class="filterControls">-->
-                        <!--<input type="button" value="Select All"/>-->
-                        <!--<input type="button" value="Select None"/>-->
-                    <!--</div>-->
                     <ol>
-                        <li><input type="radio" name="species" id="speciesAll" data-facet="taxon_id" data-facet-id="-1" checked />
+                        <li><input type="radio" name="species" id="speciesAll" data-facet="taxon_id" data-facet-id="ALL" checked />
                         <label for="speciesAll">All</label>
                         <!--<span class="count"></span>--></li>
                         <% for(var i = 0; i < ids.length; i++) {
@@ -75,7 +71,7 @@
                 <div style="display: none;" data-filter="<%= filterName %>">
                     <h4><%= filter.displayName %></h4>
                     <ol>
-                        <li><input type="radio" name="<%= filterName %>" id="<%= filterName %>All" data-facet="<%= filterName %>" data-facet-id="-1" checked />
+                        <li><input type="radio" name="<%= filterName %>" id="<%= filterName %>All" data-facet="<%= filterName %>" data-facet-id="ALL" checked />
                             <label for="speciesAll">All</label>
                             <!--<span class="count"></span>--></li>
                         <% for(var i = 0; i < filter.ids.length; i++) {
