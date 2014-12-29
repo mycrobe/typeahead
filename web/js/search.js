@@ -46,6 +46,11 @@ $('body').on('change', 'input[type=radio]', function() {
   console.log(selectedFilter);
 });
 
+$('#speciesDropdown').on('change', 'input[type=radio]', function() {
+  $('#speciesFilter').val($(this).next().text());
+  $('#speciesDropdown').hide();
+});
+
 function updateStateFromHash() {
   var hash = hashParams.asObject()
     , q = hash.q;

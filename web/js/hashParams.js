@@ -15,7 +15,6 @@ function getHashParams() {
 function setHashParams(params) {
   if (Object.keys(params).length) {
     var newHash = '#' + $.param(params);
-    console.debug('New URL hash is ' + newHash);
     window.location.hash = newHash;
   }
   else {

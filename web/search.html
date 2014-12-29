@@ -14,14 +14,14 @@
             </a>
         </div><div id="searchContainer">
             <form id="searchForm">
-                <input id="search" class="searchFormComponent" type="text" autofocus
+                <input id="search" class="searchFormComponent" type="text" autofocus placeholder='Search for genes, e.g. "PAD4", "alcohol dehydrogenase"'
                         /><input id="speciesFilter" class="searchFormComponent" type="button" name="submit"
                                  value="All Species"/>
                 <div id="speciesDropdown" style="display: none;"></div>
                 <script id="speciesDropdownT" type="text/template">
                     <ol>
                         <li><input type="radio" name="species" id="speciesAll" data-facet="taxon_id" data-facet-id="ALL" checked />
-                        <label for="speciesAll">All</label>
+                        <label for="speciesAll">All Species</label>
                         <!--<span class="count"></span>--></li>
                         <% for(var i = 0; i < ids.length; i++) {
                             var species = data[ids[i]];
