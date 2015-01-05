@@ -11,7 +11,7 @@ and the associated info can be retrieved
 here is an example query on the genes core for "pad*" which returns the necessary fields for constructing
 a link to the ensembl gene page. It also sends highlighted fragments of the query string and returns facet counts
 for taxon_id, biotype, and interpro_xrefi
- http://localhost:8983/solr/genes/select?rows=10&q=pad*&fl=id,database,system_name,gene_id&wt=json&indent=true&hl=true&hl.fl=*&facet=true&facet.field=taxon_id&facet.field=biotype&facet.mincount=1&facet.field=interpro_xrefi
+ http://localhost:8983/solr/genes/select?rows=10&q=pad*&fl=id,database,system_name,id&wt=json&indent=true&hl=true&hl.fl=*&facet=true&facet.field=taxon_id&facet.field=biotype&facet.mincount=1&facet.field=interpro_xrefi
 
 N.B. that facet field results are string keys
 to obtain a set of documents by ID query like this space sparated list of ids in parentheses
@@ -36,11 +36,11 @@ function defaultRenderer(core,doc,highlights) {
 var cores = {
   genes : {
     enabled : true,
-    labelField : 'gene_id',
+    labelField : 'id',
     params : {
       rows : 10,
       wt : 'json',
-      fl : 'id,database,system_name,gene_id,genetrees',
+      fl : 'id,database,system_name,species,epl_gene_tree,eg_gene_tree',
       hl : 'true',
       'hl.fl' : '*',
       fq : [],
@@ -61,13 +61,13 @@ var cores = {
           longest = highlights[field];
         }
       }
-      if (longest === '') longest = doc.gene_id;
+      if (longest === '') longest = doc.id;
       var geneTreeLink = '';
-      if (doc.hasOwnProperty('genetrees') && doc.genetrees.length>0) {
-        geneTreeLink = ' GeneTree: <a target="_blank" href="http://ensembl.gramene.org/Multi/GeneTree/Image?gt=' + doc.genetrees[0] + '">'+doc.genetrees[0]+'</a>';
+      if (doc.hasOwnProperty('epl_gene_tree')) {
+        geneTreeLink = ' GeneTree: <a target="_blank" href="http://ensembl.gramene.org/Multi/GeneTree/Image?gt=' + doc.epl_gene_tree + '">'+doc.epl_gene_tree+'</a>';
       }
-      var geneLink = ' Gene: <a target="_blank" href="http://ensembl.gramene.org/'+doc.system_name+'/Gene/Summary?db='+doc.database+';g='+doc.gene_id+'">'+doc.gene_id+'</a>';
-      return '<span>' + longest + '</span><div>' + geneLink + geneTreeLink + '</div>';
+      var geneLink = ' Gene: <a target="_blank" href="http://ensembl.gramene.org/'+doc.system_name+'/Gene/Summary?db='+doc.database+';g='+doc.id+'">'+doc.id+'</a>';
+      return '<span>' + longest + '</span><div><i>' + doc.species + '</i>' + geneLink + geneTreeLink + '</div>';
     }
   },
   taxonomy : {
@@ -213,7 +213,7 @@ function removeFilter(core,id) {
 function initialize(p) {
   cores.genes.enabled=true;
 }
-var searchURL = "http://data.gramene.org/43/search/";
+var searchURL = "http://data.gramene.org/44/search/";
 function searchSecondary(secondaryCore,fc,searchLi) {
   var ids = [];
   var counts = {};
