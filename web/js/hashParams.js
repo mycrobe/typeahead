@@ -33,9 +33,13 @@ exports.asObject = function () {
   return getHashParams();
 };
 
-exports.get = function (key) {
-  var params = getHashParams();
-  return params[key];
+exports.get = function (key, defaultValue) {
+  var params = getHashParams()
+    , value = params[key];
+
+  if(!value) value = params[key] = defaultValue;
+
+  return value;
 }
 
 exports.push = function (key, value) {
@@ -69,8 +73,9 @@ exports.set = function (key, value) {
 
 exports.retain = function (keys) {
   modifyHashParams(function (params) {
-    for (key in params) {
-      if (!$.inArray(key, keys)) {
+    for (var key in params) {
+      var willDeleteThisKey = ($.inArray(key, keys)) === -1;
+      if (willDeleteThisKey) {
         delete params[key];
       }
     }

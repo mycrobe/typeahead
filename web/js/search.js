@@ -27,13 +27,33 @@ $('#toggleFilters').on('click', function () {
 
 $('#facets-top').on('click', 'a', function () {
   var filterName = $(this).attr('data-filter')
-    , containerEl = $('#facets-left div[data-filter="' + filterName + '"]');
-  $(this).toggleClass('active');
+    , containerEl = $('#facets-left div[data-filter="' + filterName + '"]')
+    , isNowActive = $(this).toggleClass('active').hasClass('active')
+    , filterState = hashParams.get('filters', {});
+
+  if(isNowActive) {
+    filterState[filterName] = 1;
+  }
+  else {
+    delete filterState[filterName];
+  }
+
+  hashParams.set('filters', filterState);
+
   containerEl.toggle();
 });
 
 $('#speciesFilter').on('click', function () {
   $('#speciesDropdown').toggle();
+});
+
+$('#resultsStats').on('click', '#genomeCountLink', function() {
+  $('#speciesDropdown').show();
+});
+
+$('#items').on('click', '.expandInlineLinks', function() {
+  var docId = $(this).data().docId;
+  $('.inlineLinks[data-doc-id="' + docId + '"').toggle();
 });
 
 $('body').on('change', 'input[type=radio]', function() {
@@ -47,9 +67,13 @@ $('body').on('change', 'input[type=radio]', function() {
 });
 
 $('#speciesDropdown').on('change', 'input[type=radio]', function() {
-  $('#speciesFilter').val($(this).next().text());
+  updateSpeciesDisplayName();
   $('#speciesDropdown').hide();
 });
+
+function updateSpeciesDisplayName() {
+  $('#speciesFilter').val($('#speciesDropdown input:checked').next().text());
+}
 
 function updateStateFromHash() {
   var hash = hashParams.asObject()
@@ -66,7 +90,19 @@ function populateResults(data) {
     , template = $('#itemsT').html();
 
   $('#items').html(EJS.render(template, data.response));
+  updateStatus(data);
   updateFilters(data);
+}
+
+function updateStatus(data) {
+  var template = $('#resultsStatsT').html()
+    , context = {counts: {results: data.response.numFound, species: data.facets.taxon_id.count}}
+    , content = EJS.render(template, context)
+    , element = $('#resultsStats')
+
+
+  element.html(content);
+
 }
 
 function updateFilters(data) {
@@ -90,33 +126,54 @@ function updateLeftFilters(filters) {
   $('#facets-left').html(EJS.render(templateLeft, {filters:filters}));
 }
 
-function updateFilterState(data) {
+function hideAllFilters() {
   $('#filterForm > div').hide();
   $('#filterForm').hide();
   $('#facets-top ol').hide();
   $('#toggleFilters').removeClass('active');
   $('#facets-top a.toggle').removeClass('active');
+}
+
+function showFilter(facet) {
+  $('#filterForm > div[data-filter="' + facet + '"]').show();
+  $('#filterForm').show();
+  $('#facets-top ol').show();
+  $('#toggleFilters').addClass('active');
+  $('#facets-top a.toggle[data-filter="'+facet+'"]').addClass('active');
+}
+
+function resetFilterVisibility() {
+  var visibleFilters = hashParams.get('filters');
+
+  hideAllFilters();
+  for(visible in visibleFilters) {
+    showFilter(visible);
+  }
+}
+
+function updateFilterState(data) {
+  resetFilterVisibility();
 
   for(var facet in data.facets) {
     var selected = hashParams.get(facet);
     if(!selected) continue;
-    if(facet !== 'taxon_id') {
-      $('#filterForm > div[data-filter="' + facet + '"]').show();
-      $('#filterForm').show();
-      $('#facets-top ol').show();
-      $('#toggleFilters').addClass('active');
-      $('#facets-top a.toggle[data-filter="'+facet+'"]').addClass('active');
-    }
-    for(var i = 0; i < selected.length; i++) {
-      var id = selected[i]
-        , selector = 'input[data-facet="' + facet + '"][data-facet-id="' + id + '"]'
-        , jqel = $(selector);
-
-      jqel.prop('checked', true);
-
-
-    }
+    //if(facet !== 'taxon_id') {
+    //  showFilter(facet);
+    //}
+    checkFilters(facet, selected);
     console.log(facet + ' ' + hashParams.get(facet));
+  }
+
+  updateSpeciesDisplayName();
+}
+
+function checkFilters(facet, selected) {
+  for(var i = 0; i < selected.length; i++) {
+    var id = selected[i]
+      , selector = 'input[data-facet="' + facet + '"][data-facet-id="' + id + '"]'
+      , jqel = $(selector);
+
+    jqel.prop('checked', true);
   }
 }
 

@@ -38,7 +38,7 @@ div.bar {
 #logoContainer {
     display: inline-block;
     padding: 0;
-    width: 15rem;
+    width: 20rem;
     height: 4rem;
     white-space: nowrap;
 }
@@ -54,7 +54,7 @@ div.bar {
 
 #searchContainer {
     display: inline-block;
-    width: calc(100% - 15rem);
+    width: calc(100% - 20rem);
     vertical-align: top;
     white-space: nowrap;
     margin-top: 0.8rem;
@@ -97,6 +97,10 @@ input {
     margin: 0;
 }
 
+a#genomeCountLink {
+    text-decoration: underline;
+}
+
 .filterControls {
     text-align: right;
     padding: 0 0.5rem;
@@ -108,7 +112,7 @@ input {
 }
 
 #types {
-    margin-left: 15rem;
+    margin-left: 20rem;
     display: inline-block;
 }
 
@@ -135,10 +139,15 @@ body a {
     cursor: pointer;
 }
 
-#toggleFiltersContainer {
+.barItem {
     display: inline-block;
-    padding-left: 1.67em;
+    padding-left: 1.67rem;
+    padding-right: 1.67rem;
     border-left: 1px solid #DDE5E3;
+}
+
+#resultsStats {
+    color: #999999;
 }
 
 a.toggle {
@@ -206,8 +215,8 @@ span.count {
 #facets-top {
     height: 4rem;
     font-size: smaller;
-    margin-left: 15rem;
-    max-width: calc(100% - 15rem);
+    margin-left: 20rem;
+    max-width: calc(100% - 20rem);
 }
 
 #facets-top ol {
@@ -225,10 +234,11 @@ span.count {
 }
 
 #facets-left {
-    min-width: 15rem;
-    max-width: 15rem;
+    min-width: 18rem;
+    max-width: 18rem;
     display: inline-block;
-    padding: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 #facets-left li {
@@ -246,11 +256,57 @@ span.count {
 #items {
     vertical-align: top;
     padding: 0;
-    max-width: calc(100% - 12rem);
+    max-width: calc(100% - 20rem);
     display: inline-block;
-    white-space: nowrap;
 }
 
 #results {
     white-space: nowrap;
+}
+
+div.item {
+    max-width: calc(100% - 20rem);
+    min-width: 40rem;
+}
+
+div.item h3 {
+    margin-bottom: 0.5rem;
+}
+
+div.item p {
+    white-space: normal;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+ol.inlineLinks {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    align-items: center;
+
+    padding-left: 2rem;
+}
+
+ol.inlineLinks li {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding-right: 2rem;
+    width: 25%;
+    min-width: 10rem;
+}
+
+ol.inlineLinks li p, ol.inlineLinks li ul {
+    padding-left: 1rem;
+    color: #999999;
+}
+
+em {
+    font-weight: bolder;
 }

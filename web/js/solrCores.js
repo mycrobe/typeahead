@@ -1,4 +1,4 @@
-var rootURL = "http://data.gramene.org/43/search/";
+var rootURL = "http://data.gramene.org/44/search/";
 var cores = {
   genes: {
     enabled: true,

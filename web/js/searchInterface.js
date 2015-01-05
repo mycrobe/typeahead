@@ -7,13 +7,12 @@ function geneSearch(queryString, filters, callback) {
     , url = cores.getUrlForCore(coreName)
     , params = cores.getSearchParams(coreName, queryString, filters);
 
-  $.getJSON(url, params, function(data) {
-    // intercept the results and store it here before calling the callback. Stateful!
-    results = data;
-    reformatFacetData(data);
-    addFunctions(data);
-    callback(data);
-  });
+  Q($.getJSON(url, params))
+      .then(reformatFacetData)
+      .then(incorporateLinksIntoResults)
+      .then(incorporateHighlightsIntoResults)
+      .then(addFunctions)
+      .then(callback);
 };
 
 function reformatFacetData(results) {
@@ -27,9 +26,48 @@ function reformatFacetData(results) {
     }
     delete results.facet_counts;
   }
+  return results;
 }
 
-function reformatFacet( facetData, displayName ) {
+function incorporateHighlightsIntoResults(data) {
+  var results = data.response.docs
+    , highlights = data.highlighting;
+
+  for(var i = 0; i < results.length; i++) {
+    var result = results[i]
+      , highlight = highlights[result.id];
+
+    for(var field in highlight) {
+      result[field] = highlight[field][0];
+    }
+  }
+  return data;
+}
+
+function incorporateLinksIntoResults(data) {
+  const ensemblUrl = 'http://ensembl.gramene.org/SYSTEM_NAME/Gene/Summary?db=DATABASE;g=GENEID'
+      , genetreeUrl = 'http://ensembl.gramene.org/Multi/GeneTree/Image?gt=GENETREE';
+  var results = data.response.docs;
+
+  for(var i = 0; i < results.length; i++) {
+    var result = results[i];
+    result.geneUrl = ensemblUrl.replace('SYSTEM_NAME', result.system_name)
+      .replace('DATABASE', result.database)
+      .replace('GENEID', result.id);
+
+    if(result.eg_gene_tree) {
+      result.egGenetreeUrl = genetreeUrl.replace('GENETREE', result.eg_gene_tree);
+    }
+
+    if(result.epl_gene_tree) {
+      result.eplGenetreeUrl = genetreeUrl.replace('GENETREE', result.epl_gene_tree);
+    }
+  }
+
+  return data;
+}
+
+function reformatFacet(facetData, displayName) {
   // facet data is an array of alternating ids (string) and counts (int),
   // e.g. ["4565", 99155, "3847", 54159, "109376", 46500, ... ]
 
@@ -41,10 +79,13 @@ function reformatFacet( facetData, displayName ) {
   //                 "109376" : { count: 46500 }
   //               }
   //      }
-  var result = {ids: [], data: {}, displayName: displayName};
+  var result = {ids: [], data: {}, count: 0, displayName: displayName};
   for (var i=0;i<facetData.length;i+=2) {
-    result.ids.push(facetData[i]);
-    result.data[facetData[i]] = { count: facetData[i+1] };
+    var id = facetData[i]
+      , count = facetData[i+1];
+    result.ids.push(id);
+    result.data[id] = { count: count };
+    if(count > 0) result.count++;
   }
   return result;
 }
@@ -52,6 +93,7 @@ function reformatFacet( facetData, displayName ) {
 function addFunctions(data) {
   data.getSpecies = getSpeciesFunction(data);
   data.getFilters = getFiltersFunction(data);
+  return data;
 }
 
 function getSpeciesFunction(results) {

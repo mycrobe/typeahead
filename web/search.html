@@ -15,8 +15,7 @@
         </div><div id="searchContainer">
             <form id="searchForm">
                 <input id="search" class="searchFormComponent" type="text" autofocus placeholder='Search for genes, e.g. "PAD4", "alcohol dehydrogenase"'
-                        /><input id="speciesFilter" class="searchFormComponent" type="button" name="submit"
-                                 value="All Species"/>
+                        /><input id="speciesFilter" class="searchFormComponent" type="button" name="submit" />
                 <div id="speciesDropdown" style="display: none;"></div>
                 <script id="speciesDropdownT" type="text/template">
                     <ol>
@@ -47,9 +46,14 @@
                     <li><a>Location</a></li>
                 </ol>
             </div>
-            <div id="toggleFiltersContainer">
+            <div class="barItem">
                 <a class="toggle" id="toggleFilters" role="button">Filter</a>
-            </div>
+            </div><div class="barItem" id="resultsStats"></div>
+            <script id="resultsStatsT" type="text/template">
+                <% if(counts.results > 0) { %>
+                  <%= counts.results %> results in <a id="genomeCountLink"><%= counts.species %> genomes</a>.
+                <% } %>
+            </script>
         </div>
         <div id="facets-top" class="bar"></div>
         <script id="facets-topT" type="text/template">
@@ -92,9 +96,39 @@
             <script id="itemsT" type="text/template">
                 <% for(var i = 0; i < docs.length; i++) {
                   var doc = docs[i]; %>
-                    <h3><%= doc.name %> <span><%= doc.species %></span> <% if(doc.gene_id !== doc.name) { %><span><%= doc.gene_id %></span><% } %></h3>
-                    <p><%= doc.description %></p>
-                    <a href="blah">GeneTree</a>
+                    <div class="item">
+                        <a><h3><span class="id"><%- doc.name %></span> <span class="species"><%= doc.species %></span> <% if(doc.id !== doc.name) { %><span class="altId"><%= doc.id %></span><% } %></h3></a>
+                        <p><%- doc.description %></p>
+                        <ol data-doc-id="<%=doc.id %>" class="inlineLinks">
+                            <li><a href="<%= doc.geneUrl %>" title="<%= doc.map %>, <%= doc.region.match(/^\d+$/) ? 'Chr ' + doc.region : doc.region %> from <%= doc.start%> to <%= doc.end %>">Genome Location</a></li>
+                            <li><a href="<%= doc.eplGenetreeUrl %>">Gene Tree</a></li>
+                            <li>[<a data-doc-id="<%=doc.id %>" class="expandInlineLinks">More</a>]</li>
+                        </ol>
+                        <ol data-doc-id="<%=doc.id %>" class="inlineLinks" style="display:none;">
+                            <li><a>Genome Location</a>
+                                <p>
+                                    <%= doc.map %>, <%= doc.region.match(/^\d+$/) ? 'Chr ' + doc.region : doc.region %>
+                                    from <%= doc.start%> to <%= doc.end %>
+                                </p>
+                            </li>
+                            <li><a>Gene Tree</a>
+                                <% if(doc.eg_gene_tree || doc.epl_gene_tree) { %>
+                                <ul>
+                                    <% if(doc.eg_gene_tree) { %>
+                                    <li><%= doc.eg_gene_tree %></li>
+                                    <% }
+                                       if(doc.epl_gene_tree) { %>
+                                    <li><%= doc.epl_gene_tree %></li>
+                                    <% } %>
+                                </ul>
+                                <% } %>
+                            </li>
+                            <li><a>Experimental Data</a><p>Yeast-2-hybrid, RNAseq, ChIPseq</p></li>
+                            <li><a>Predictions</a><p>expression, localization, function</p></li>
+                            <li><a>Structure</a><p>PDB structural data</p></li>
+                            <li><a>Networks</a><p>Regulatory, metabolic or interaction network data</p></li>
+                        </ol>
+                    </div>
                 <% } %>
             </script>
         </div>
